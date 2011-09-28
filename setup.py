@@ -12,5 +12,5 @@ setup(
     url="",
     requires=["websocket",
              ],
-    py_modules=["pusherclient"],
+    packages=["pusherclient"],
 )
