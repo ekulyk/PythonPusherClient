@@ -4,7 +4,7 @@ try:
 except:
     import json
 
-from threading import Thread
+from threading import Thread, Timer
 import time
 import logging
 
@@ -48,6 +48,16 @@ class Connection(Thread):
             websocket.enableTrace(True)
         self.logger.setLevel(logLevel)
 
+        # From Martyn's comment at: https://pusher.tenderapp.com/discussions/problems/36-no-messages-received-after-1-idle-minute-heartbeat
+        #   "We send a ping every 5 minutes in an attempt to keep connections 
+        #   alive..."
+        # This is why we set the connection timeout to 5 minutes, since we can
+        # expect a pusher heartbeat message every 5 minutes.  Adding 5 sec to
+        # account for small timing delays which may cause messages to not be
+        # received in exact 5 minute intervals.
+        self.connectionTimeout = 305
+        self.connectionTimer = Timer(self.connectionTimeout, self._connectionTimedOut)
+
         Thread.__init__(self)
 
     def bind(self, stateEvent, callback):
@@ -78,6 +88,7 @@ class Connection(Thread):
 
     def _on_open(self, ws):
         self.logger.info("Connection: Connection opened")
+        self.connectionTimer.start()
 
     def _on_error(self, ws, error):
         self.logger.info("Connection: Error - %s" % error)
@@ -86,6 +97,9 @@ class Connection(Thread):
 
     def _on_message(self, ws, message):
         self.logger.info("Connection: Message - %s" % message)
+
+        # Stop our timeout timer, since we got some data
+        self.connectionTimer.cancel()
 
         params = self._parse(message)
 
@@ -102,6 +116,10 @@ class Connection(Thread):
                                       params['channel'])
                 else:
                     self.logger.info("Connection: Unknown event type")
+
+        # We've handled our data, so restart our connection timeout handler
+        self.connectionTimer = Timer(self.connectionTimeout, self._connectionTimedOut)
+        self.connectionTimer.start()
 
     def _on_close(self, ws):
         self.logger.info("Connection: Connection closed")
@@ -124,3 +142,9 @@ class Connection(Thread):
         parsed = json.loads(data)
 
         self.state = "failed"
+
+    def _connectionTimedOut(self):
+        self.logger.info("Did not receive any data in time.  Reconnecting.")
+        self.state = "failed"
+        self.needsReconnect = True
+        self.socket.close()
