@@ -6,11 +6,18 @@ import time
 
 import thread
 
+try:
+    import simplejson as json
+except:
+    import json
+
 class Pusher():
-    def __init__(self, applicationKey, encryption=False, secret=None):
+    def __init__(self, applicationKey, encryption=False, secret=None, userdata={}):
         self.channels = {}
 
         self.secret = secret
+
+        self.userdata = userdata
 
         self.host = "ws.pusherapp.com"
         self.encryption = encryption
@@ -42,13 +49,29 @@ class Pusher():
 
     def subscribe(self, channelName):
         if channelName not in self.channels.keys():
-            authKey = self._generateAuthKey(channelName) 
+            data = {}
+            data['channel'] = channelName
 
-            self.connection._send_event('pusher:subscribe',
-                                        {'channel':channelName,
-                                         'auth':authKey,
-                                        }
-                                       )
+            if channelName.startswith('presence-'):
+                authKey = self._generatePresenceAuthKey(self.connection.socket_id,
+                                                        self.applicationKey,
+                                                        channelName,
+                                                        self.secret,
+                                                        self.userdata)
+
+                data['auth'] = authKey
+                data['channel_data'] = json.dumps(self.userdata)
+            elif channelName.startswith('private-'):
+                authKey = self._generatePrivateAuthKey(self.connection.socket_id,
+                                                       self.applicationKey,
+                                                       channelName,
+                                                       self.secret)
+
+                data['auth'] = authKey
+            else:
+                authKey = ""
+
+            self.connection._send_event('pusher:subscribe', data)
 
             self.channels[channelName] = Channel(channelName)
 
@@ -78,13 +101,31 @@ class Pusher():
         if channelName in self.channels.keys():
             self.channels[channelName]._handle_event(eventName, data)
 
-    def _generateAuthKey(self, channelName):
+
+    def _generatePrivateAuthKey(self, socket_id,
+                                      applicationKey,
+                                      channelName,
+                                      secret):
         authKey = ""
 
-        if self.secret:
-            stringToSign = str(self.connection.socket_id) + ":" + str(channelName)
-            h = hmac.new(self.secret, stringToSign, hashlib.sha256)
+        if socket_id and applicationKey and channelName and secret:
+            stringToSign = "%s:%s" % (socket_id, channelName)
+            h = hmac.new(secret, stringToSign, hashlib.sha256)
+            authKey = "%s:%s" % (applicationKey, h.hexdigest())
 
-            authKey = "%s:%s" % (self.applicationKey, h.hexdigest())
+        return authKey
+
+
+    def _generatePresenceAuthKey(self, socket_id,
+                                       applicationKey,
+                                       channelName,
+                                       secret,
+                                       userData):
+        authKey = ""
+
+        if socket_id and applicationKey and channelName and secret and userData:
+            stringToSign = "%s:%s:%s" % (socket_id, channelName, json.dumps(userData))
+            h = hmac.new(secret, stringToSign, hashlib.sha256)
+            authKey = "%s:%s" % (applicationKey, h.hexdigest())
 
         return authKey
