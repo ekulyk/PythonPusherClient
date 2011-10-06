@@ -5,11 +5,22 @@ import time
 
 import pusherclient
 
+global pusher
+
 def print_usage(filename):
     print "Usage: python %s <appkey> <secret>" % filename
 
 def channel_callback(data):
     print "Channel Callback: %s" % data
+
+def connect_handler(data):
+    if pusher.channel("private-channel"):
+        pusher.unsubscribe("private-channel")
+
+    channel = pusher.subscribe("private-channel")
+
+    channel.bind('my_event', channel_callback)
+
 
 if __name__ == '__main__':
     if len(sys.argv) != 3:
@@ -21,11 +32,7 @@ if __name__ == '__main__':
 
     pusher = pusherclient.Pusher(appkey, secret=secret)
 
-    pusher.wait_until_connected()
-
-    channel = pusher.subscribe("private-channel")
-
-    channel.bind('my_event', channel_callback)
+    pusher.connection.bind('pusher:connection_established', connect_handler)
 
     while True:
         time.sleep(1)

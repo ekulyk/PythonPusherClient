@@ -93,10 +93,6 @@ class Pusher():
 
         return channel        
 
-    def wait_until_connected(self):
-        while self.connection.state != "connected":
-            time.sleep(1)
-
     def _connectionHandler(self, eventName, data, channelName):
         if channelName in self.channels.keys():
             self.channels[channelName]._handle_event(eventName, data)
