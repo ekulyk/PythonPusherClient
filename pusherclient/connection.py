@@ -8,19 +8,6 @@ from threading import Thread, Timer
 import time
 import logging
 
-CONNECTION_EVENTS_NEW = [
-                         'initialized',
-                         'connecting',
-                         'connected',
-                         'unavailable',
-                         'failed',
-                         'disconnected',
-                        ]
-
-CONNECTION_EVENTS_OLD = [
-                         'pusher:connection_established',
-                         'pusher:connection_failed',
-                        ]
 
 class Connection(Thread):
     def __init__(self, eventHandler, url, logLevel=logging.INFO):
@@ -108,18 +95,19 @@ class Connection(Thread):
         params = self._parse(message)
 
         if 'event' in params.keys():
-            if (params['event'] in CONNECTION_EVENTS_NEW) or (params['event'] in CONNECTION_EVENTS_OLD):
-
+            if 'channel' not in params.keys():
+                # We've got a connection event.  Lets handle it.
                 if params['event'] in self.eventCallbacks.keys():
                     for callback in self.eventCallbacks[params['event']]:
                         callback(params['data'])
-            else:
-                if 'channel' in params.keys():
-                    self.eventHandler(params['event'], 
-                                      params['data'], 
-                                      params['channel'])
                 else:
-                    self.logger.info("Connection: Unknown event type")
+                    self.logger.info("Connection: Unhandled event")
+            else:
+                # We've got a channel event.  Lets pass it up to the pusher
+                # so it can be handled by the appropriate channel.
+                self.eventHandler(params['event'], 
+                                  params['data'], 
+                                  params['channel'])
 
         # We've handled our data, so restart our connection timeout handler
         self.connectionTimer = Timer(self.connectionTimeout, self._connectionTimedOut)
