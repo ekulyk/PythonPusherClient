@@ -45,7 +45,8 @@ class Pusher():
         thread.start_new_thread(self.connection._connect, ())
 
     def disconnect(self):
-        pass
+        self.connection.disconnect()
+        self.channels = {}
 
     def subscribe(self, channelName):
         if channelName not in self.channels.keys():

@@ -66,6 +66,10 @@ class Connection(Thread):
 
         self.eventCallbacks[stateEvent].append(callback)
 
+    def disconnect(self):
+        self.needsReconnect = False
+        self.socket.close()
+
     def run(self):
         self._connect()
 
