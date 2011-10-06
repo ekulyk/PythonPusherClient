@@ -78,7 +78,7 @@ class Pusher():
         return self.channels[channelName]
 
     def unsubscribe(self, channelName):
-        if channelName in self.channel.keys():
+        if channelName in self.channels.keys():
             self.connection._send_event('pusher:unsubscribe',
                                         {'channel':channelName,
                                         }
