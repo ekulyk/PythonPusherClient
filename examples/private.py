@@ -14,9 +14,6 @@ def channel_callback(data):
     print "Channel Callback: %s" % data
 
 def connect_handler(data):
-    if pusher.channel("private-channel"):
-        pusher.unsubscribe("private-channel")
-
     channel = pusher.subscribe("private-channel")
 
     channel.bind('my_event', channel_callback)
@@ -32,7 +29,7 @@ if __name__ == '__main__':
 
     pusher = pusherclient.Pusher(appkey, secret=secret)
 
-    pusher.connection.bind('pusher:connection_established', connect_handler)
+    pusher.connection.bind('connection_established', connect_handler)
 
     while True:
         time.sleep(1)

@@ -25,7 +25,7 @@ Example of using this pusher client to consume websockets::
         channel.bind('myevent', callback)
 
     pusher = pusherclient.Pusher(appkey)
-    pusher.connection.bind('pusher:connection_established', connect_handler)
+    pusher.connection.bind('connection_established', connect_handler)
 
     while True:
         time.sleep(1)
@@ -43,7 +43,7 @@ Thanks
 ------
 
 Built using the websocket-client module from <http://github.com/liris/websocket-client>.
-The ruby gem by Logan Koester which provides a similar servicewas also very helpful for a reference.  Take a look at it here: <http://github.com/logankoester/pusher-client>.
+The ruby gem by Logan Koester which provides a similar service was also very helpful for a reference.  Take a look at it here: <http://github.com/logankoester/pusher-client>.
 
 Copyright
 ---------

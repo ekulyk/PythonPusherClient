@@ -48,33 +48,32 @@ class Pusher():
         self.connection.disconnect()
         self.channels = {}
 
-    def subscribe(self, channelName):
-        if channelName not in self.channels.keys():
-            data = {}
-            data['channel'] = channelName
+    def subscribe(self, channelName): 
+        data = {}
+        data['channel'] = channelName
 
-            if channelName.startswith('presence-'):
-                authKey = self._generatePresenceAuthKey(self.connection.socket_id,
-                                                        self.applicationKey,
-                                                        channelName,
-                                                        self.secret,
-                                                        self.userdata)
+        if channelName.startswith('presence-'):
+            authKey = self._generatePresenceAuthKey(self.connection.socket_id,
+                                                    self.applicationKey,
+                                                    channelName,
+                                                    self.secret,
+                                                    self.userdata)
 
-                data['auth'] = authKey
-                data['channel_data'] = json.dumps(self.userdata)
-            elif channelName.startswith('private-'):
-                authKey = self._generatePrivateAuthKey(self.connection.socket_id,
-                                                       self.applicationKey,
-                                                       channelName,
-                                                       self.secret)
+            data['auth'] = authKey
+            data['channel_data'] = json.dumps(self.userdata)
+        elif channelName.startswith('private-'):
+            authKey = self._generatePrivateAuthKey(self.connection.socket_id,
+                                                   self.applicationKey,
+                                                   channelName,
+                                                   self.secret)
 
-                data['auth'] = authKey
-            else:
-                authKey = ""
+            data['auth'] = authKey
+        else:
+            authKey = ""
 
-            self.connection._send_event('pusher:subscribe', data)
+        self.connection._send_event('pusher:subscribe', data)
 
-            self.channels[channelName] = Channel(channelName)
+        self.channels[channelName] = Channel(channelName)
 
         return self.channels[channelName]
 
