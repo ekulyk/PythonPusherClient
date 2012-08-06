@@ -30,7 +30,7 @@ if __name__ == '__main__':
 
     pusher = pusherclient.Pusher(appkey, secret=secret, userdata={'user_id':userid})
 
-    pusher.connection.bind('connection_established', connect_handler)
+    pusher.connection.bind('pusher:connection_established', connect_handler)
 
 
     while True:
