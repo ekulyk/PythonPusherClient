@@ -25,7 +25,7 @@ Example of using this pusher client to consume websockets::
         channel.bind('myevent', callback)
 
     pusher = pusherclient.Pusher(appkey)
-    pusher.connection.bind('connection_established', connect_handler)
+    pusher.connection.bind('pusher:connection_established', connect_handler)
 
     while True:
         time.sleep(1)
