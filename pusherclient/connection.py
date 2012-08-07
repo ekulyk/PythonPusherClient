@@ -26,6 +26,7 @@ class Connection(Thread):
 
         self.bind("pusher:connection_established", self._connect_handler)
         self.bind("pusher:connection_failed", self._failed_handler)
+        self.bind("pusher:pong", self._pong_handler)
 
         self.state = "initialized"
 
@@ -44,6 +45,10 @@ class Connection(Thread):
         # received in exact 5 minute intervals.
         self.connectionTimeout = 305
         self.connectionTimer = Timer(self.connectionTimeout, self._connectionTimedOut)
+
+        self.pingInterval = 115
+	self.pingTimer = Timer(self.pingInterval, self._send_ping)
+	self.pingTimer.start()
 
         Thread.__init__(self)
 
@@ -91,6 +96,7 @@ class Connection(Thread):
 
         # Stop our timeout timer, since we got some data
         self.connectionTimer.cancel()
+        self.pingTimer.cancel()
 
         params = self._parse(message)
 
@@ -113,6 +119,9 @@ class Connection(Thread):
         self.connectionTimer = Timer(self.connectionTimeout, self._connectionTimedOut)
         self.connectionTimer.start()
 
+        self.pingTimer = Timer(self.pingInterval, self._send_ping)
+        self.pingTimer.start()
+
     def _on_close(self, ws):
         self.logger.info("Connection: Connection closed")
         self.state = "disconnected"
@@ -122,6 +131,10 @@ class Connection(Thread):
 
     def _send_event(self, eventName, data):
         self.socket.send(json.dumps({'event':eventName, 'data':data}))
+
+    def _send_ping(self):
+	self.logger.info("Connection: ping to pusher")
+        self.socket.send(json.dumps({'event':'pusher:ping', 'data':''}))
 
     def _connect_handler(self, data):
         parsed = json.loads(data)
@@ -134,6 +147,11 @@ class Connection(Thread):
         parsed = json.loads(data)
 
         self.state = "failed"
+
+    def _pong_handler(self, data):
+	# self. logger.info("Connection: pong from pusher")
+	# (not needed, pong comes through in _on_message. This is just to stop "unhandled event")
+	pass
 
     def _connectionTimedOut(self):
         self.logger.info("Did not receive any data in time.  Reconnecting.")
