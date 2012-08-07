@@ -24,6 +24,9 @@ class Connection(Thread):
         self.needsReconnect = False
         self.reconnectInterval = 10
 
+        self.pongReceived = False
+        self.pongTimeout = 5
+
         self.bind("pusher:connection_established", self._connect_handler)
         self.bind("pusher:connection_failed", self._failed_handler)
         self.bind("pusher:pong", self._pong_handler)
@@ -47,8 +50,8 @@ class Connection(Thread):
         self.connectionTimer = Timer(self.connectionTimeout, self._connectionTimedOut)
 
         self.pingInterval = 115
-	self.pingTimer = Timer(self.pingInterval, self._send_ping)
-	self.pingTimer.start()
+        self.pingTimer = Timer(self.pingInterval, self._send_ping)
+        self.pingTimer.start()
 
         Thread.__init__(self)
 
@@ -133,8 +136,21 @@ class Connection(Thread):
         self.socket.send(json.dumps({'event':eventName, 'data':data}))
 
     def _send_ping(self):
-	self.logger.info("Connection: ping to pusher")
+        self.logger.info("Connection: ping to pusher")
         self.socket.send(json.dumps({'event':'pusher:ping', 'data':''}))
+        self.pongTimer = Timer(self.pongTimeout, self._check_pong)
+        self.pongTimer.start()
+
+    def _check_pong(self):
+        self.pongTimer.cancel()
+        if (self.pongReceived == True):
+            self.pongReceived = False
+        else:
+            self.logger.info("Did not receive pong in time.  Will attempt to reconnect.")
+            self.state = "failed"
+            self.needsReconnect = True
+            self.socket.close()
+
 
     def _connect_handler(self, data):
         parsed = json.loads(data)
@@ -150,8 +166,7 @@ class Connection(Thread):
 
     def _pong_handler(self, data):
 	# self. logger.info("Connection: pong from pusher")
-	# (not needed, pong comes through in _on_message. This is just to stop "unhandled event")
-	pass
+        self.pongReceived = True
 
     def _connectionTimedOut(self):
         self.logger.info("Did not receive any data in time.  Reconnecting.")
