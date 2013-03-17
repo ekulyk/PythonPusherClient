@@ -35,7 +35,7 @@ class Pusher():
                                                       self.client_id,
                                                       self.version)
 
-        self.url = "%s://%s:%s/%s" % (self.protocol,
+        self.url = "%s://%s:%s%s" % (self.protocol,
                                       self.host,
                                       self.port,
                                       self.path)
