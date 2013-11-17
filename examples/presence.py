@@ -28,7 +28,7 @@ if __name__ == '__main__':
     secret = sys.argv[2]
     userid = sys.argv[3]
 
-    pusher = pusherclient.Pusher(appkey, secret=secret, userdata={'user_id':userid})
+    pusher = pusherclient.Pusher(appkey, secret=secret, user_data={'user_id': userid})
 
     pusher.connection.bind('pusher:connection_established', connect_handler)
 
