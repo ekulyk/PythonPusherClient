@@ -52,15 +52,22 @@ class Connection(Thread):
 
         self.ping_interval = 115
         self.ping_timer = Timer(self.ping_interval, self.send_ping)
-        self.ping_timer.start()
 
         Thread.__init__(self)
 
-    def bind(self, state_event, callback):
-        if state_event not in self.event_callbacks.keys():
-            self.event_callbacks[state_event] = []
+    def bind(self, event_name, callback):
+        """Bind an event to a callback
 
-        self.event_callbacks[state_event].append(callback)
+        :param event_name: The name of the event to bind to.
+        :type event_name: str
+
+        :param callback: The callback to notify of this event.
+        """
+
+        if event_name not in self.event_callbacks.keys():
+            self.event_callbacks[event_name] = []
+
+        self.event_callbacks[event_name].append(callback)
 
     def disconnect(self):
         self.needs_reconnect = False
@@ -71,6 +78,8 @@ class Connection(Thread):
 
     def _connect(self):
         self.state = "connecting"
+
+        self.ping_timer.start()
 
         self.socket = websocket.WebSocketApp(
             self.url,
