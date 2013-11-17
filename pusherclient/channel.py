@@ -1,22 +1,26 @@
-
-
-class Channel():
-    def __init__(self, channelName):
-        self.name = channelName
+class Channel(object):
+    def __init__(self, channel_name):
+        self.name = channel_name
 
         self.event_callbacks = {}
 
+    def bind(self, event_name, callback):
+        """Bind an event to a callback
 
-    def bind(self, eventName, callback):
-        if eventName not in self.event_callbacks.keys():
-            self.event_callbacks[eventName] = []
+        :param event_name: The name of the event to bind to.
+        :type event_name: str
 
-        self.event_callbacks[eventName].append(callback)
+        :param callback: The callback to notify of this event.
+        """
+        if event_name not in self.event_callbacks.keys():
+            self.event_callbacks[event_name] = []
 
-    def trigger(self, eventName, data):
+        self.event_callbacks[event_name].append(callback)
+
+    def trigger(self, event_name, data):
         pass
 
-    def _handle_event(self, eventName, data):
-        if eventName in self.event_callbacks.keys():
-            for callback in self.event_callbacks[eventName]:
+    def _handle_event(self, event_name, data):
+        if event_name in self.event_callbacks.keys():
+            for callback in self.event_callbacks[event_name]:
                 callback(data)
