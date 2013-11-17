@@ -10,8 +10,6 @@ Simply run "python setup.py install".
 
 This module depends on websocket-client module available from: <http://github.com/liris/websocket-client>
 
-Note: Something in the latest version of websocket-client causes pusherclient to break.  Please use the version at <http://github.com/ekulyk/websocket-client> for now.
-
 Example
 -------
 
@@ -27,6 +25,7 @@ Example of using this pusher client to consume websockets::
 
     pusher = pusherclient.Pusher(appkey)
     pusher.connection.bind('pusher:connection_established', connect_handler)
+    pusher.connect()
 
     while True:
         time.sleep(1)
