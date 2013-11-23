@@ -119,22 +119,6 @@ class Connection(Thread):
         self.state = "failed"
         self.needs_reconnect = True
 
-    def _stop_timers(self):
-        if self.ping_timer:
-            self.ping_timer.cancel()
-
-        if self.connection_timer:
-            self.connection_timer.cancel()
-
-    def _start_timers(self):
-        self._stop_timers()
-
-        self.ping_timer = Timer(self.ping_interval, self.send_ping)
-        self.ping_timer.start()
-
-        self.connection_timer = Timer(self.connection_timeout, self._connection_timed_out)
-        self.connection_timer.start()
-
     def _on_message(self, ws, message):
         self.logger.info("Connection: Message - %s" % message)
 
@@ -171,6 +155,22 @@ class Connection(Thread):
     @staticmethod
     def _parse(message):
         return json.loads(message)
+
+    def _stop_timers(self):
+        if self.ping_timer:
+            self.ping_timer.cancel()
+
+        if self.connection_timer:
+            self.connection_timer.cancel()
+
+    def _start_timers(self):
+        self._stop_timers()
+
+        self.ping_timer = Timer(self.ping_interval, self.send_ping)
+        self.ping_timer.start()
+
+        self.connection_timer = Timer(self.connection_timeout, self._connection_timed_out)
+        self.connection_timer.start()
 
     def send_event(self, event_name, data):
         self.socket.send(json.dumps({'event': event_name, 'data': data}))
