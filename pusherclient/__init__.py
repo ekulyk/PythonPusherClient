@@ -11,13 +11,13 @@ except:
     import json
 
 
-VERSION = "0.1.1"
+VERSION = "0.6.0"
 
 
 class Pusher(object):
     host = "ws.pusherapp.com"
     client_id = 'PythonPusherClient'
-    protocol = 4
+    protocol = 6
 
     def __init__(self, key, secure=True, secret=None, user_data=None):
         self.key = key
