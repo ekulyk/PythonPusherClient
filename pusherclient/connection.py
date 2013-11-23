@@ -29,6 +29,7 @@ class Connection(Thread):
         self.bind("pusher:connection_established", self._connect_handler)
         self.bind("pusher:connection_failed", self._failed_handler)
         self.bind("pusher:pong", self._pong_handler)
+        self.bind("pusher:ping", self._ping_handler)
 
         self.state = "initialized"
 
@@ -166,6 +167,10 @@ class Connection(Thread):
         self.pong_timer = Timer(self.pong_timeout, self._check_pong)
         self.pong_timer.start()
 
+    def send_pong(self):
+        self.logger.info("Connection: pong to pusher")
+        self.socket.send(json.dumps({'event': 'pusher:pong', 'data': ''}))
+
     def _check_pong(self):
         self.pong_timer.cancel()
 
@@ -188,6 +193,11 @@ class Connection(Thread):
         parsed = json.loads(data)
 
         self.state = "failed"
+
+    def _ping_handler(self, data):
+        self.send_pong()
+        # Restart our timers since we received something on the connection
+        self._start_timers()
 
     def _pong_handler(self, data):
         # self. logger.info("Connection: pong from pusher")
