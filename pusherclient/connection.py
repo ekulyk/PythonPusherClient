@@ -24,7 +24,7 @@ class Connection(Thread):
 
         self.pong_timer = None
         self.pong_received = False
-        self.pong_timeout = 5
+        self.pong_timeout = 30
 
         self.bind("pusher:connection_established", self._connect_handler)
         self.bind("pusher:connection_failed", self._failed_handler)
@@ -51,7 +51,7 @@ class Connection(Thread):
         self.connection_timeout = 305
         self.connection_timer = None
 
-        self.ping_interval = 115
+        self.ping_interval = 120
         self.ping_timer = None
 
         Thread.__init__(self)
