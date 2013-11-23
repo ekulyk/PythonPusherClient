@@ -48,10 +48,10 @@ class Connection(Thread):
         # received in exact 5 minute intervals.
 
         self.connection_timeout = 305
-        self.connection_timer = Timer(self.connection_timeout, self._connection_timed_out)
+        self.connection_timer = None
 
         self.ping_interval = 115
-        self.ping_timer = Timer(self.ping_interval, self.send_ping)
+        self.ping_timer = None
 
         Thread.__init__(self)
 
@@ -79,8 +79,6 @@ class Connection(Thread):
     def _connect(self):
         self.state = "connecting"
 
-        self.ping_timer.start()
-
         self.socket = websocket.WebSocketApp(
             self.url,
             on_open=self._on_open,
@@ -99,19 +97,34 @@ class Connection(Thread):
 
     def _on_open(self, ws):
         self.logger.info("Connection: Connection opened")
-        self.connection_timer.start()
+        self._start_timers()
 
     def _on_error(self, ws, error):
         self.logger.info("Connection: Error - %s" % error)
         self.state = "failed"
         self.needs_reconnect = True
 
+    def _stop_timers(self):
+        if self.ping_timer:
+            self.ping_timer.cancel()
+
+        if self.connection_timer:
+            self.connection_timer.cancel()
+
+    def _start_timers(self):
+        self._stop_timers()
+
+        self.ping_timer = Timer(self.ping_interval, self.send_ping)
+        self.ping_timer.start()
+
+        self.connection_timer = Timer(self.connection_timeout, self._connection_timed_out)
+        self.connection_timer.start()
+
     def _on_message(self, ws, message):
         self.logger.info("Connection: Message - %s" % message)
 
         # Stop our timeout timer, since we got some data
-        self.connection_timer.cancel()
-        self.ping_timer.cancel()
+        self._stop_timers()
 
         params = self._parse(message)
 
@@ -133,15 +146,12 @@ class Connection(Thread):
                 )
 
         # We've handled our data, so restart our connection timeout handler
-        self.connection_timer = Timer(self.connection_timeout, self._connection_timed_out)
-        self.connection_timer.start()
-
-        self.ping_timer = Timer(self.ping_interval, self.send_ping)
-        self.ping_timer.start()
+        self._start_timers()
 
     def _on_close(self, ws, *args):
         self.logger.info("Connection: Connection closed")
         self.state = "disconnected"
+        self._stop_timers()
 
     @staticmethod
     def _parse(message):
