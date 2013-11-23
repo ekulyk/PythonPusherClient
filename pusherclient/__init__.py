@@ -66,7 +66,7 @@ class Pusher(object):
 
         self.connection.send_event('pusher:subscribe', data)
 
-        self.channels[channel_name] = Channel(channel_name)
+        self.channels[channel_name] = Channel(channel_name, self.connection)
 
         return self.channels[channel_name]
 

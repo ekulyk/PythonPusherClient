@@ -172,8 +172,13 @@ class Connection(Thread):
         self.connection_timer = Timer(self.connection_timeout, self._connection_timed_out)
         self.connection_timer.start()
 
-    def send_event(self, event_name, data):
-        self.socket.send(json.dumps({'event': event_name, 'data': data}))
+    def send_event(self, event_name, data, channel_name=None):
+        event = {'event': event_name, 'data': data}
+        if channel_name:
+            event['channel'] = channel_name
+
+        self.logger.info("Connection: Sending event - %s" % event)
+        self.socket.send(json.dumps(event))
 
     def send_ping(self):
         self.logger.info("Connection: ping to pusher")
@@ -217,25 +222,33 @@ class Connection(Thread):
         self.pong_received = True
 
     def _pusher_error_handler(self, data):
-        parsed = json.loads(data)
+        if 'code' in data:
+            error_code = None
 
-        if 'code' in parsed:
-            error_code = int(parsed['code'])
-
-            self.logger.error("Connection: Received error %s" % error_code)
-
-            if (error_code >= 4000) and (error_code <= 4099):
-                # The connection SHOULD NOT be re-established unchanged
-                self.logger.info("Connection: Error is unrecoverable.  Disconnecting")
-                self.disconnect()
-            elif (error_code >= 4100) and (error_code <= 4199):
-                # The connection SHOULD be re-established after backing off
-                self.reconnect()
-            elif (error_code >= 4200) and (error_code <= 4299):
-                # The connection SHOULD be re-established immediately
-                self.reconnect(0)
-            else:
+            try:
+                error_code = int(data['code'])
+            except:
                 pass
+
+            if error_code is not None:
+                self.logger.error("Connection: Received error %s" % error_code)
+
+                if (error_code >= 4000) and (error_code <= 4099):
+                    # The connection SHOULD NOT be re-established unchanged
+                    self.logger.info("Connection: Error is unrecoverable.  Disconnecting")
+                    self.disconnect()
+                elif (error_code >= 4100) and (error_code <= 4199):
+                    # The connection SHOULD be re-established after backing off
+                    self.reconnect()
+                elif (error_code >= 4200) and (error_code <= 4299):
+                    # The connection SHOULD be re-established immediately
+                    self.reconnect(0)
+                else:
+                    pass
+            else:
+                self.logger.error("Connection: Unknown error code")
+        else:
+            self.logger.error("Connection: No error code supplied")
 
     def _connection_timed_out(self):
         self.logger.info("Did not receive any data in time.  Reconnecting.")
