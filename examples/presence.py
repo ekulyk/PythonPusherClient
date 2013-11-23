@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import sys
 sys.path.append('..')
 
@@ -31,7 +33,7 @@ if __name__ == '__main__':
     pusher = pusherclient.Pusher(appkey, secret=secret, user_data={'user_id': userid})
 
     pusher.connection.bind('pusher:connection_established', connect_handler)
-
+    pusher.connect()
 
     while True:
         time.sleep(1)
