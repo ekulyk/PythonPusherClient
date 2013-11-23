@@ -10,6 +10,6 @@ setup(
     author_email="e.kulyk@gmail.com",
     license="",
     url="",
-    requires=["websocket-client"],
+    install_requires=["websocket-client"],
     packages=["pusherclient"],
 )
