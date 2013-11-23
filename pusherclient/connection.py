@@ -30,6 +30,7 @@ class Connection(Thread):
         self.bind("pusher:connection_failed", self._failed_handler)
         self.bind("pusher:pong", self._pong_handler)
         self.bind("pusher:ping", self._ping_handler)
+        self.bind("pusher:error", self._pusher_error_handler)
 
         self.state = "initialized"
 
@@ -72,7 +73,16 @@ class Connection(Thread):
 
     def disconnect(self):
         self.needs_reconnect = False
-        self.socket.close()
+        if self.socket:
+            self.socket.close()
+
+    def reconnect(self, reconnect_interval=10):
+        self.logger.info("Connection: Reconnect in %s" % reconnect_interval)
+        self.reconnect_interval = reconnect_interval
+
+        self.needs_reconnect = True
+        if self.socket:
+            self.socket.close()
 
     def run(self):
         self._connect()
@@ -94,6 +104,10 @@ class Connection(Thread):
             self.logger.info("Attempting to connect again in %s seconds." % self.reconnect_interval)
             self.state = "unavailable"
             time.sleep(self.reconnect_interval)
+
+            # We need to set this flag since closing the socket will set it to
+            # false
+            self.socket.keep_running = True
             self.socket.run_forever()
 
     def _on_open(self, ws):
@@ -179,8 +193,7 @@ class Connection(Thread):
         else:
             self.logger.info("Did not receive pong in time.  Will attempt to reconnect.")
             self.state = "failed"
-            self.needs_reconnect = True
-            self.socket.close()
+            self.reconnect()
 
     def _connect_handler(self, data):
         parsed = json.loads(data)
@@ -203,8 +216,28 @@ class Connection(Thread):
         # self. logger.info("Connection: pong from pusher")
         self.pong_received = True
 
+    def _pusher_error_handler(self, data):
+        parsed = json.loads(data)
+
+        if 'code' in parsed:
+            error_code = int(parsed['code'])
+
+            self.logger.error("Connection: Received error %s" % error_code)
+
+            if (error_code >= 4000) and (error_code <= 4099):
+                # The connection SHOULD NOT be re-established unchanged
+                self.logger.info("Connection: Error is unrecoverable.  Disconnecting")
+                self.disconnect()
+            elif (error_code >= 4100) and (error_code <= 4199):
+                # The connection SHOULD be re-established after backing off
+                self.reconnect()
+            elif (error_code >= 4200) and (error_code <= 4299):
+                # The connection SHOULD be re-established immediately
+                self.reconnect(0)
+            else:
+                pass
+
     def _connection_timed_out(self):
         self.logger.info("Did not receive any data in time.  Reconnecting.")
         self.state = "failed"
-        self.needs_reconnect = True
-        self.socket.close()
+        self.reconnect()
