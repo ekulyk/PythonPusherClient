@@ -3,7 +3,7 @@ from connection import Connection
 import hashlib
 import thread
 import hmac
-
+import logging
 
 try:
     import simplejson as json
@@ -19,14 +19,14 @@ class Pusher(object):
     client_id = 'PythonPusherClient'
     protocol = 6
 
-    def __init__(self, key, secure=True, secret=None, user_data=None):
+    def __init__(self, key, secure=True, secret=None, user_data=None, log_level=logging.INFO):
         self.key = key
         self.secret = secret
         self.user_data = user_data or {}
 
         self.channels = {}
 
-        self.connection = Connection(self._connection_handler, self._build_url(key, secure))
+        self.connection = Connection(self._connection_handler, self._build_url(key, secure), log_level=log_level)
 
     def connect(self):
         """Connect to Pusher"""
