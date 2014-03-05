@@ -34,7 +34,7 @@ class Connection(Thread):
 
         self.state = "initialized"
 
-        self.logger = logging.getLogger()
+        self.logger = logging.getLogger(self.__module__)  # create a new logger
         self.logger.addHandler(logging.StreamHandler())
         if log_level == logging.DEBUG:
             websocket.enableTrace(True)
