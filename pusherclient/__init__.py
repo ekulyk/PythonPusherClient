@@ -1,5 +1,5 @@
-from channel import Channel
-from connection import Connection
+from .channel import Channel
+from .connection import Connection
 import hashlib
 import hmac
 import logging
