@@ -42,7 +42,7 @@ class Connection(Thread):
 
         # From Martyn's comment at:
         # https://pusher.tenderapp.com/discussions/problems/36-no-messages-received-after-1-idle-minute-heartbeat
-        #   "We send a ping every 5 minutes in an attempt to keep connections 
+        #   "We send a ping every 5 minutes in an attempt to keep connections
         #   alive..."
         # This is why we set the connection timeout to 5 minutes, since we can
         # expect a pusher heartbeat message every 5 minutes.  Adding 5 sec to
@@ -112,6 +112,8 @@ class Connection(Thread):
 
     def _on_open(self, ws):
         self.logger.info("Connection: Connection opened")
+        # Send a ping right away to inform that the connection is alive. If you don't do this, it takes the ping interval to subcribe to channel and events
+        self.send_ping()
         self._start_timers()
 
     def _on_error(self, ws, error):
