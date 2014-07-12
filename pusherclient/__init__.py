@@ -1,9 +1,13 @@
-from channel import Channel
-from connection import Connection
+from .channel import Channel
+from .connection import Connection
 import hashlib
-import thread
 import hmac
 import logging
+
+try:
+    import thread
+except:
+    import _thread as thread
 
 try:
     import simplejson as json
