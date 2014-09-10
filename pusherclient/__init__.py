@@ -23,14 +23,14 @@ class Pusher(object):
     client_id = 'PythonPusherClient'
     protocol = 6
 
-    def __init__(self, key, secure=True, secret=None, user_data=None, log_level=logging.INFO):
+    def __init__(self, key, secure=True, secret=None, user_data=None, log_level=logging.INFO, daemon=True):
         self.key = key
         self.secret = secret
         self.user_data = user_data or {}
 
         self.channels = {}
 
-        self.connection = Connection(self._connection_handler, self._build_url(key, secure), log_level=log_level)
+        self.connection = Connection(self._connection_handler, self._build_url(key, secure), log_level=log_level, daemon=daemon)
 
     def connect(self):
         """Connect to Pusher"""
