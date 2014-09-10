@@ -10,7 +10,7 @@ except:
 
 
 class Connection(Thread):
-    def __init__(self, event_handler, url, log_level=logging.INFO):
+    def __init__(self, event_handler, url, log_level=logging.INFO, daemon=True):
         self.event_handler = event_handler
         self.url = url
 
@@ -56,6 +56,7 @@ class Connection(Thread):
         self.ping_timer = None
 
         Thread.__init__(self)
+        self.daemon = daemon
 
     def bind(self, event_name, callback):
         """Bind an event to a callback
@@ -180,17 +181,26 @@ class Connection(Thread):
             event['channel'] = channel_name
 
         self.logger.info("Connection: Sending event - %s" % event)
-        self.socket.send(json.dumps(event))
+        try:
+            self.socket.send(json.dumps(event))
+        except Exception as e:
+            self.logger.error("Failed send event: %s" % e)
 
     def send_ping(self):
         self.logger.info("Connection: ping to pusher")
-        self.socket.send(json.dumps({'event': 'pusher:ping', 'data': ''}))
+        try:
+            self.socket.send(json.dumps({'event': 'pusher:ping', 'data': ''}))
+        except Exception as e:
+            self.logger.error("Failed send ping: %s" % e)
         self.pong_timer = Timer(self.pong_timeout, self._check_pong)
         self.pong_timer.start()
 
     def send_pong(self):
         self.logger.info("Connection: pong to pusher")
-        self.socket.send(json.dumps({'event': 'pusher:pong', 'data': ''}))
+        try:
+            self.socket.send(json.dumps({'event': 'pusher:pong', 'data': ''}))
+        except Exception as e:
+            self.logger.error("Failed send pong: %s" % e)
 
     def _check_pong(self):
         self.pong_timer.cancel()
