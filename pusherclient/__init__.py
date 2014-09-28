@@ -4,10 +4,6 @@ import hashlib
 import hmac
 import logging
 
-try:
-    import thread
-except:
-    import _thread as thread
 
 try:
     import simplejson as json
@@ -34,7 +30,7 @@ class Pusher(object):
 
     def connect(self):
         """Connect to Pusher"""
-        thread.start_new_thread(self.connection.run, ())
+        self.connection.start()
 
     def disconnect(self):
         """Disconnect from Pusher"""
