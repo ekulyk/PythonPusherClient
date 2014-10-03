@@ -10,10 +10,10 @@ import pusherclient
 global pusher
 
 def print_usage(filename):
-    print "Usage: python %s <appkey> <secret> <userid>" % filename
+    print("Usage: python %s <appkey> <secret> <userid>" % filename)
 
 def channel_callback(data):
-    print "Channel Callback: %s" % data
+    print("Channel Callback: %s" % data)
 
 def connect_handler(data):
     channel = pusher.subscribe("presence-channel")
