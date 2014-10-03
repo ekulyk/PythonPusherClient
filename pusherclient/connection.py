@@ -166,6 +166,9 @@ class Connection(Thread):
         if self.connection_timer:
             self.connection_timer.cancel()
 
+        if self.pong_timer:
+            self.pong_timer.cancel()
+
     def _start_timers(self):
         self._stop_timers()
 

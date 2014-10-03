@@ -3,10 +3,7 @@ import sys
 
 VERSION = "0.2.0"
 
-if sys.version_info >= (3,):
-    requirements = ["websocket-client-py3"]
-else:
-    requirements = ["websocket-client"]
+requirements = ["websocket-client"]
 
 setup(
     name="pusherclient",
