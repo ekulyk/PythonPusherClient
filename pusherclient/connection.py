@@ -101,7 +101,8 @@ class Connection(Thread):
         self.socket.run_forever()
 
         while self.needs_reconnect:
-            self.logger.info("Attempting to connect again in %s seconds." % self.reconnect_interval)
+            self.logger.info("Attempting to connect again in %s seconds."
+                             % self.reconnect_interval)
             self.state = "unavailable"
             time.sleep(self.reconnect_interval)
 
@@ -112,7 +113,9 @@ class Connection(Thread):
 
     def _on_open(self, ws):
         self.logger.info("Connection: Connection opened")
-        # Send a ping right away to inform that the connection is alive. If you don't do this, it takes the ping interval to subcribe to channel and events
+        # Send a ping right away to inform that the connection is alive. If you
+        # don't do this, it takes the ping interval to subcribe to channel and
+        # events
         self.send_ping()
         self._start_timers()
 
