@@ -137,7 +137,10 @@ class Connection(Thread):
                 # We've got a connection event.  Lets handle it.
                 if params['event'] in self.event_callbacks.keys():
                     for callback in self.event_callbacks[params['event']]:
-                        callback(params['data'])
+                        try:
+                            callback(params['data'])
+                        except Exception:
+                            self.logger.exception("Callback raised unhandled")
                 else:
                     self.logger.info("Connection: Unhandled event")
             else:
