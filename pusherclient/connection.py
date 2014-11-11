@@ -221,15 +221,10 @@ class Connection(Thread):
             self.reconnect()
 
     def _connect_handler(self, data):
-        parsed = json.loads(data)
-
-        self.socket_id = parsed['socket_id']
-
+        self.socket_id = data['socket_id']
         self.state = "connected"
 
     def _failed_handler(self, data):
-        parsed = json.loads(data)
-
         self.state = "failed"
 
     def _ping_handler(self, data):
