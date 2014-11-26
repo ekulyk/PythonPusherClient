@@ -75,6 +75,7 @@ class Connection(Thread):
         self.needs_reconnect = False
         if self.socket:
             self.socket.close()
+        self.join()
 
     def reconnect(self, reconnect_interval=10):
         self.logger.info("Connection: Reconnect in %s" % reconnect_interval)
