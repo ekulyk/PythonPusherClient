@@ -7,7 +7,7 @@ import logging
 
 try:
     import simplejson as json
-except:
+except ImportError:
     import json
 
 
