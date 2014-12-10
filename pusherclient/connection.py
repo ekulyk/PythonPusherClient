@@ -10,7 +10,7 @@ except:
 
 
 class Connection(Thread):
-    def __init__(self, event_handler, url, log_level=logging.INFO, daemon=True):
+    def __init__(self, event_handler, url, log_level=logging.INFO, daemon=True, reconnect_interval=10):
         self.event_handler = event_handler
         self.url = url
 
@@ -20,7 +20,8 @@ class Connection(Thread):
         self.event_callbacks = {}
 
         self.needs_reconnect = False
-        self.reconnect_interval = 10
+        self.default_reconnect_interval = reconnect_interval
+        self.reconnect_interval = reconnect_interval
 
         self.pong_timer = None
         self.pong_received = False
@@ -76,7 +77,10 @@ class Connection(Thread):
         if self.socket:
             self.socket.close()
 
-    def reconnect(self, reconnect_interval=10):
+    def reconnect(self, reconnect_interval=None):
+        if reconnect_interval is None:
+            reconnect_interval = self.default_reconnect_interval
+
         self.logger.info("Connection: Reconnect in %s" % reconnect_interval)
         self.reconnect_interval = reconnect_interval
 

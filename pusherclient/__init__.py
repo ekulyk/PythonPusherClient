@@ -19,7 +19,7 @@ class Pusher(object):
     client_id = 'PythonPusherClient'
     protocol = 6
 
-    def __init__(self, key, secure=True, secret=None, user_data=None, log_level=logging.INFO, daemon=True, port=None):
+    def __init__(self, key, secure=True, secret=None, user_data=None, log_level=logging.INFO, daemon=True, port=None, reconnect_interval=10):
         self.key = key
         self.secret = secret
         self.user_data = user_data or {}
@@ -28,7 +28,7 @@ class Pusher(object):
 
         self.url = self._build_url(key, secure, port)
 
-        self.connection = Connection(self._connection_handler, self.url, log_level=log_level, daemon=daemon)
+        self.connection = Connection(self._connection_handler, self.url, log_level=log_level, daemon=daemon, reconnect_interval=reconnect_interval)
 
     def connect(self):
         """Connect to Pusher"""

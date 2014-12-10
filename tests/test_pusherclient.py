@@ -63,16 +63,16 @@ if __name__ == '__main__':
 
     exit_code = ERR_FAILED
 
-    # If testing taking longer than 30 seconds, we have an issue.  This time 
+    # If testing taking longer than N seconds, we have an issue.  This time
     # depends on the client reconnect interval most of all.
-    timer = threading.Timer(30, stop_test)
+    timer = threading.Timer(10, stop_test)
     timer.daemon = True
     timer.start()
 
     # Set up our client and attempt to connect to the server
     appkey = 'appkey'
     pusherclient.Pusher.host = "127.0.0.1"
-    client = pusherclient.Pusher(appkey, port=PORT, secure=False)
+    client = pusherclient.Pusher(appkey, port=PORT, secure=False, reconnect_interval=1)
 
     print client._build_url("mykey", False, port=PORT)
     client.connection.bind('pusher:connection_established', connect_handler)
