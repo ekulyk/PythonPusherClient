@@ -234,7 +234,7 @@ class Connection(Thread):
         self._start_timers()
 
     def _pong_handler(self, data):
-        # self. logger.info("Connection: pong from pusher")
+        self.logger.info("Connection: pong from pusher")
         self.pong_received = True
 
     def _pusher_error_handler(self, data):
