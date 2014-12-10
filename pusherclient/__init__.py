@@ -19,14 +19,16 @@ class Pusher(object):
     client_id = 'PythonPusherClient'
     protocol = 6
 
-    def __init__(self, key, secure=True, secret=None, user_data=None, log_level=logging.INFO, daemon=True):
+    def __init__(self, key, secure=True, secret=None, user_data=None, log_level=logging.INFO, daemon=True, port=None):
         self.key = key
         self.secret = secret
         self.user_data = user_data or {}
 
         self.channels = {}
 
-        self.connection = Connection(self._connection_handler, self._build_url(key, secure), log_level=log_level, daemon=daemon)
+        self.url = self._build_url(key, secure, port)
+
+        self.connection = Connection(self._connection_handler, self.url, log_level=log_level, daemon=daemon)
 
     def connect(self):
         """Connect to Pusher"""
@@ -121,7 +123,7 @@ class Pusher(object):
         return auth_key
 
     @classmethod
-    def _build_url(cls, key, secure):
+    def _build_url(cls, key, secure, port=None):
         path = "/app/%s?client=%s&version=%s&protocol=%s" % (
             key,
             cls.client_id,
@@ -129,9 +131,20 @@ class Pusher(object):
             cls.protocol
         )
 
+        proto = "ws"
+
+        if secure:
+            proto = "wss"
+
+        if port is None:
+            if secure:
+                port = 443
+            else:
+                port = 80
+
         return "%s://%s:%s%s" % (
-            "wss" if secure else "ws",
+            proto,
             cls.host,
-            443 if secure else 80,
+            port,
             path
         )
