@@ -74,7 +74,7 @@ if __name__ == '__main__':
     pusherclient.Pusher.host = "127.0.0.1"
     client = pusherclient.Pusher(appkey, port=PORT, secure=False, reconnect_interval=1)
 
-    print client._build_url("mykey", False, port=PORT)
+    print(client._build_url("mykey", False, port=PORT))
     client.connection.bind('pusher:connection_established', connect_handler)
     client.connect()
 
@@ -83,7 +83,7 @@ if __name__ == '__main__':
     time.sleep(2)
 
     # Start our pusher server on localhost
-    server = pusherserver.Pusher(port=PORT)
+    server = pusherserver.Pusher(pusherserver.PusherTestServerProtocol, port=PORT)
     server.run()
 
     sys.exit(exit_code)
