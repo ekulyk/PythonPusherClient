@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/ekulyk/PythonPusherClient.svg?branch=master)](https://travis-ci.org/ekulyk/PythonPusherClient)
+
 pusherclient
 =============
 
