@@ -8,6 +8,7 @@ import time
 import pusherclient
 
 # Add a logging handler so we can see the raw communication data
+import logging
 root = logging.getLogger()
 root.setLevel(logging.INFO)
 ch = logging.StreamHandler(sys.stdout)
