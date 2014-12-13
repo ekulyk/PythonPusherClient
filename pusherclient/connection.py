@@ -19,6 +19,7 @@ class Connection(Thread):
 
         self.event_callbacks = {}
 
+        self.disconnect_called = False
         self.needs_reconnect = False
         self.default_reconnect_interval = reconnect_interval
         self.reconnect_interval = reconnect_interval
@@ -74,8 +75,10 @@ class Connection(Thread):
 
     def disconnect(self):
         self.needs_reconnect = False
+        self.disconnect_called = True
         if self.socket:
             self.socket.close()
+        self.join()
 
     def reconnect(self, reconnect_interval=None):
         if reconnect_interval is None:
@@ -104,7 +107,7 @@ class Connection(Thread):
 
         self.socket.run_forever()
 
-        while self.needs_reconnect:
+        while self.needs_reconnect and not self.disconnect_called:
             self.logger.info("Attempting to connect again in %s seconds."
                              % self.reconnect_interval)
             self.state = "unavailable"
