@@ -18,6 +18,7 @@ Example of using this pusher client to consume websockets::
     import pusherclient
 
     # Add a logging handler so we can see the raw communication data
+    import logging
     root = logging.getLogger()
     root.setLevel(logging.INFO)
     ch = logging.StreamHandler(sys.stdout)
@@ -57,5 +58,5 @@ The ruby gem by Logan Koester which provides a similar service was also very hel
 Copyright
 ---------
 
-See LICENSE for details.
+MTI License - See LICENSE for details.
 
