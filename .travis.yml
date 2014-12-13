@@ -9,5 +9,9 @@ install:
   - pip install .
   # Our test server uses autobahn
   - pip install autobahn
+  # For 2.x, our server needs twisted
+  - pip install twisted
+  # For 3.x where x < 4, our server needs trollius
+  - pip install trollius
 script: python tests/test_pusherclient.py
 
